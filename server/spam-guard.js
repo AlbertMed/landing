@@ -8,6 +8,10 @@ const MAX_MESSAGE_LENGTH = 2000;
 const MIN_MESSAGE_LENGTH = 10;
 const MAX_URLS = 5;
 
+function getRuntimeEnv(env) {
+  return env && typeof env === "object" ? env : process.env ?? {};
+}
+
 /**
  * Si pasa el honeypot, respondemos éxito falso para no alertar al bot.
  */
@@ -16,7 +20,8 @@ export function isHoneypotTriggered(body) {
   return String(trap).trim().length > 0;
 }
 
-export function validateContactPayload(body) {
+export function validateContactPayload(body, env = process.env) {
+  const runtimeEnv = getRuntimeEnv(env);
   const { name, email, message, formLoadedAt } = body || {};
 
   if (!name?.trim() || !email?.trim() || !message?.trim()) {
@@ -45,8 +50,8 @@ export function validateContactPayload(body) {
     return { valid: false, error: "El mensaje contiene demasiados enlaces." };
   }
 
-  const minSeconds = Number(process.env.SPAM_MIN_SUBMIT_SECONDS || DEFAULT_MIN_SECONDS);
-  const maxAgeMs = Number(process.env.SPAM_MAX_FORM_AGE_MS || DEFAULT_MAX_AGE_MS);
+  const minSeconds = Number(runtimeEnv.SPAM_MIN_SUBMIT_SECONDS || DEFAULT_MIN_SECONDS);
+  const maxAgeMs = Number(runtimeEnv.SPAM_MAX_FORM_AGE_MS || DEFAULT_MAX_AGE_MS);
   const loadedAt = Number(formLoadedAt);
 
   if (!loadedAt || Number.isNaN(loadedAt)) {

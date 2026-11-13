@@ -5,7 +5,19 @@
 
 const hits = new Map();
 
+function getRuntimeEnv(env) {
+  return env && typeof env === "object" ? env : process.env ?? {};
+}
+
 export function getClientIp(req) {
+  if (typeof Request !== "undefined" && req instanceof Request) {
+    const forwarded = req.headers.get("cf-connecting-ip") || req.headers.get("x-forwarded-for");
+    if (forwarded) {
+      return String(forwarded).split(",")[0].trim();
+    }
+    return "unknown";
+  }
+
   const forwarded = req.headers?.["x-forwarded-for"];
   if (forwarded) {
     return String(forwarded).split(",")[0].trim();
@@ -14,8 +26,9 @@ export function getClientIp(req) {
 }
 
 export function checkRateLimit(key, options = {}) {
-  const max = Number(options.max ?? process.env.RATE_LIMIT_MAX ?? 5);
-  const windowMs = Number(options.windowMs ?? process.env.RATE_LIMIT_WINDOW_MS ?? 15 * 60 * 1000);
+  const runtimeEnv = getRuntimeEnv(options.env ?? process.env);
+  const max = Number(options.max ?? runtimeEnv.RATE_LIMIT_MAX ?? 5);
+  const windowMs = Number(options.windowMs ?? runtimeEnv.RATE_LIMIT_WINDOW_MS ?? 15 * 60 * 1000);
   const now = Date.now();
   const record = hits.get(key);
 
@@ -32,10 +45,10 @@ export function checkRateLimit(key, options = {}) {
   return { allowed: true };
 }
 
-export function createRateLimitMiddleware() {
+export function createRateLimitMiddleware(env = process.env) {
   return (req, res, next) => {
     const ip = getClientIp(req);
-    const result = checkRateLimit(`contact:${ip}`);
+    const result = checkRateLimit(`contact:${ip}`, { env });
 
     if (!result.allowed) {
       return res.status(429).json({

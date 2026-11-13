@@ -1,13 +1,17 @@
 import { marketingDefaults } from "./defaults.js";
 
+function getRuntimeEnv(env) {
+  return env && typeof env === "object" ? env : process.env ?? {};
+}
+
 /**
  * Construye la configuración pública del sitio desde variables de entorno.
  */
-export function buildSiteConfig() {
-  const linkedin = process.env.LINKEDIN_URL || "";
+export function buildSiteConfig(env = process.env) {
+  const runtimeEnv = getRuntimeEnv(env);
 
   return {
-    name: process.env.SITE_NAME || "localmx.online",
+    name: runtimeEnv.SITE_NAME || "localmx.online",
 
     product: { ...marketingDefaults.product },
     productMetrics: [...marketingDefaults.productMetrics],
@@ -17,36 +21,38 @@ export function buildSiteConfig() {
 
     contact: {
       ...marketingDefaults.contact,
-      email: process.env.CONTACT_EMAIL || "",
-      phone: process.env.CONTACT_PHONE || "",
-      phoneDisplay: process.env.CONTACT_PHONE_DISPLAY || "",
-      whatsappMessage: process.env.WHATSAPP_MESSAGE || "Hola, me interesa contactarte.",
-      
+      email: runtimeEnv.CONTACT_EMAIL || "",
+      phone: runtimeEnv.CONTACT_PHONE || "",
+      phoneDisplay: runtimeEnv.CONTACT_PHONE_DISPLAY || "",
+      whatsappMessage: runtimeEnv.WHATSAPP_MESSAGE || "Hola, me interesa contactarte.",
     },
 
     social: {
-     
+      linkedin: runtimeEnv.LINKEDIN_URL || "",
     },
 
     seo: {
-      title: process.env.SEO_TITLE || "Ing. Alberto | Desarrollo de Software y Automatización",
+      title: runtimeEnv.SEO_TITLE || "Ing. Alberto | Desarrollo de Software y Automatización",
       description:
-        process.env.SEO_DESCRIPTION ||
+        runtimeEnv.SEO_DESCRIPTION ||
         "Desarrollo de software, automatización con IA y herramientas web para negocios que quieren ahorrar tiempo y crecer.",
-      url: process.env.SEO_URL || "",
-      image: process.env.SEO_IMAGE || "",
+      url: runtimeEnv.SEO_URL || "",
+      image: runtimeEnv.SEO_IMAGE || "",
     },
   };
 }
 
-export function getSmtpConfig() {
+export function getSmtpConfig(env = process.env) {
+  const runtimeEnv = getRuntimeEnv(env);
+
   return {
-    host: process.env.SMTP_HOST || "smtp.gmail.com",
-    port: Number(process.env.SMTP_PORT || 587),
-    secure: process.env.SMTP_SECURE === "true",
-    user: process.env.SMTP_USER || "",
-    pass: process.env.SMTP_PASS || "",
-    fromName: process.env.SMTP_FROM_NAME || process.env.SITE_NAME || "Landing Page",
-    to: process.env.SMTP_TO || process.env.CONTACT_EMAIL || "",
+    host: runtimeEnv.SMTP_HOST || "smtp.gmail.com",
+    port: Number(runtimeEnv.SMTP_PORT || 587),
+    secure: String(runtimeEnv.SMTP_SECURE ?? "false") === "true",
+    user: runtimeEnv.SMTP_USER || "",
+    pass: runtimeEnv.SMTP_PASS || "",
+    fromName: runtimeEnv.SMTP_FROM_NAME || runtimeEnv.SITE_NAME || "Landing Page",
+    to: runtimeEnv.SMTP_TO || runtimeEnv.CONTACT_EMAIL || "",
+    fromEmail: runtimeEnv.SMTP_FROM_EMAIL || runtimeEnv.CONTACT_EMAIL || "",
   };
 }
