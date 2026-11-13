@@ -1,0 +1,23 @@
+# Firebase
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+
+# Vercel
+.vercel
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Dependencies (if using Tailwind CLI later)
+node_modules/
+
+# Environment
+.env
+.env.local
+!.env.example

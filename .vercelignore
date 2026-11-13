@@ -1,0 +1,7 @@
+.env
+.env.*
+!.env.example
+server/index.js
+firebase.json
+.firebase
+README.md
